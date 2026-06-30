@@ -1,3 +1,4 @@
+
 """
 Django settings for config project.
 
@@ -24,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = 'django-insecure-s9=c89@znb3h60*2n050h$u4#4(@8cpm9o)*c$#!a1*^et(g#b'
 
-DEBUG = True
+import os  
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = []
 

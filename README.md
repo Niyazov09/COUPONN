@@ -1,185 +1,79 @@
-"# coupon" 
-# Task Tracker API
+📌 Task Tracker API
+📖 Описание
 
-## Описание
+Task Tracker API — REST API на Django REST Framework для управления проектами, задачами и комментариями с JWT-аутентификацией.
 
-Task Tracker API — это REST API, разработанное с использованием Django REST Framework. Приложение позволяет создавать проекты, управлять задачами, добавлять комментарии и работать с пользователями через JWT-аутентификацию.
-
----
-
-## Используемые технологии
-
-* Python 3
-* Django
-* Django REST Framework
-* JWT (SimpleJWT)
-* SQLite
-* Django Filter
-* DRF Spectacular (Swagger/OpenAPI)
-
----
-
-## Возможности
-
-* Авторизация по JWT
-* Создание проектов
-* Добавление участников в проект
-* Создание задач
-* Назначение исполнителей
-* Комментирование задач
-* Поиск задач
-* Фильтрация задач
-* Сортировка задач
-* Пагинация
-* Swagger документация API
-
----
-
-## Установка
-
-Создать виртуальное окружение:
-
-```bash
+⚙️ Технологии
+Python 3
+Django
+Django REST Framework
+SimpleJWT
+SQLite
+Django Filter
+DRF Spectacular (Swagger / OpenAPI)
+🚀 Возможности
+JWT-аутентификация
+Создание проектов
+Добавление участников в проекты
+Создание задач
+Назначение исполнителей (assignee)
+Комментарии к задачам
+Поиск задач
+Фильтрация и сортировка
+Swagger документация
+📦 Установка
+1. Создать виртуальное окружение
 python -m venv venv
-```
-
-Активировать окружение:
+2. Активировать
 
 Windows:
-
-```bash
 venv\Scripts\activate
-```
 
-Linux/macOS:
-
-```bash
-source venv/bin/activate
-```
-
-Установить зависимости:
-
-```bash
+3. Установить зависимости
 pip install django
 pip install djangorestframework
 pip install djangorestframework-simplejwt
 pip install django-filter
 pip install drf-spectacular
-```
-
----
-
-## Применить миграции
-
-```bash
+🧱 Миграции
 python manage.py makemigrations
 python manage.py migrate
-```
-
----
-
-## Создать администратора
-
-```bash
+👤 Создать администратора
 python manage.py createsuperuser
-```
-
----
-
-## Запуск проекта
-
-```bash
+▶️ Запуск
 python manage.py runserver
-```
-
-После запуска приложение будет доступно по адресу:
-
-```
+API будет доступно:
 http://127.0.0.1:8000/
-```
-
----
-
-## JWT Авторизация
-
+🔐 JWT Авторизация
 Получить токен:
-
-```
 POST /api/token/
-```
-
 Обновить токен:
-
-```
 POST /api/token/refresh/
-```
-
----
-
-## Основные API
-
-### Проекты
-
-```
+📁 API Endpoints
+📂 Projects
 GET    /api/projects/
 POST   /api/projects/
-PUT    /api/projects/{id}/
+PATCH  /api/projects/{id}/
 DELETE /api/projects/{id}/
 POST   /api/projects/{id}/add_member/
-```
-
-### Задачи
-
-```
+📋 Tasks
 GET    /api/tasks/
 POST   /api/tasks/
-PUT    /api/tasks/{id}/
+PATCH  /api/tasks/{id}/
 DELETE /api/tasks/{id}/
 GET    /api/tasks/{id}/comments/
-```
-
-### Комментарии
-
-```
+💬 Comments
 GET    /api/comments/
 POST   /api/comments/
-PUT    /api/comments/{id}/
+PATCH  /api/comments/{id}/
 DELETE /api/comments/{id}/
-```
-
----
-
-## Swagger документация
-
-OpenAPI Schema:
-
-```
+📊 Swagger / OpenAPI
+Schema:
 /api/schema/
-```
-
 Swagger UI:
-
-```
 /api/schema/swagger-ui/
-```
-
-ReDoc:
-
-```
 /api/schema/redoc/
-```
-
----
-
-## Запуск тестов
-
-```bash
+🧪 Тесты
 python manage.py test
-```
-
----
-
-## Автор
-
-Проект выполнен в рамках учебного задания по Django REST Framework.
-"# COUPONN" 
+👨‍💻 Автор:shokhzhakhon
+Учебный проект Django REST Framework
