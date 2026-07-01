@@ -2,6 +2,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 
+from django.contrib import admin
+from django.urls import path, include
+from tracker.views import home
+
+urlpatterns = [
+    path("", home),  # главная страница
+    path("admin/", admin.site.urls),
+    path("api/", include("tracker.urls")),
+]
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView

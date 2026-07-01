@@ -39,7 +39,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    # ---------------- ADD MEMBER FIX ----------------
+    def get_permissions(self):
+        if self.action == "destroy":
+            permission_classes = [IsAuthenticated, IsProjectOwner]
+        else:
+            permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
+
+        return [permission() for permission in permission_classes]
+
     @action(detail=True, methods=["post"])
     def add_member(self, request, pk=None):
         project = self.get_object()
@@ -57,17 +64,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # защита от "abc"
         try:
             user_id = int(user_id)
+            user = User.objects.get(pk=user_id)
         except (ValueError, TypeError):
             return Response(
                 {"error": "user_id must be integer"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        try:
-            user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response(
                 {"error": "User not found"},
@@ -81,7 +85,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         project.members.add(user)
-
         return Response({"status": "member added"})
 
 
@@ -121,11 +124,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"])
     def comments(self, request, pk=None):
         task = self.get_object()
-
-        serializer = CommentSerializer(
-            task.comments.all(),
-            many=True
-        )
+        serializer = CommentSerializer(task.comments.all(), many=True)
         return Response(serializer.data)
 
 
