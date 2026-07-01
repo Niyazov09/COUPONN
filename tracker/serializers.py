@@ -25,15 +25,21 @@ class ProjectSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
 # ---------------- TASK ----------------
 
 class TaskSerializer(serializers.ModelSerializer):
-    # WRITE: принимаем username
-    assignee = serializers.SlugRelatedField(
+    # INPUT: ID (как в ТЗ)
+    assignee = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        slug_field="username",
         required=False,
         allow_null=True
+    )
+
+    # OUTPUT: username (как в ТЗ)
+    assignee_username = serializers.CharField(
+        source="assignee.username",
+        read_only=True
     )
 
     class Meta:
@@ -46,6 +52,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "status",
             "priority",
             "assignee",
+            "assignee_username",
             "created_at",
             "updated_at",
         ]

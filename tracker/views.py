@@ -16,12 +16,10 @@ from .serializers import ProjectSerializer, TaskSerializer, CommentSerializer
 
 from .permissions import (
     IsProjectOwner,
-    IsProjectMember,
     IsTaskProjectMember,
     IsCommentProjectMember,
     IsProjectOwnerOrMember,
 )
-
 
 # ---------------- PROJECT ----------------
 
@@ -40,21 +38,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_permissions(self):
-     if self.action == "destroy":
-        permission_classes = [IsAuthenticated, IsProjectOwner]
-     else:
-        permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
+        if self.action == "destroy":
+            permission_classes = [IsAuthenticated, IsProjectOwner]
+        else:
+            permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
 
-     return [permission() for permission in permission_classes]
+        return [permission() for permission in permission_classes]
 
     @action(detail=True, methods=["post"])
     def add_member(self, request, pk=None):
         project = self.get_object()
 
         if project.owner != request.user:
-            raise PermissionDenied(
-                "Только владелец проекта может добавлять участников."
-            )
+            raise PermissionDenied("Только владелец проекта может добавлять участников.")
 
         user_id = request.data.get("user_id")
 
@@ -79,10 +75,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         if project.members.filter(id=user.id).exists():
-            return Response(
-                {"status": "already member"},
-                status=status.HTTP_200_OK,
-            )
+            return Response({"status": "already member"})
 
         project.members.add(user)
         return Response({"status": "member added"})
@@ -103,11 +96,12 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     filterset_fields = ["project", "status", "assignee"]
     search_fields = ["title"]
-    ordering_fields = ["priority", "created_at"]
+
+    # ✅ ИСПРАВЛЕНИЕ ПУНКТА 3
+    ordering_fields = ["priority_weight", "created_at"]
 
     def get_queryset(self):
         user = self.request.user
-
         return Task.objects.filter(
             Q(project__owner=user) |
             Q(project__members=user)
@@ -137,7 +131,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
         return Comment.objects.filter(
             Q(task__project__owner=user) |
             Q(task__project__members=user)
@@ -147,14 +140,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         task = serializer.validated_data["task"]
 
         if not task.project.is_member(self.request.user):
-            raise PermissionDenied(
-                "Вы не являетесь участником проекта."
-            )
+            raise PermissionDenied("Вы не являетесь участником проекта.")
 
         serializer.save(author=self.request.user)
 
-
-# ---------------- HOME ----------------
-
-def home(request):
-    return JsonResponse({"status": "API работает"})

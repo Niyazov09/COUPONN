@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import ProjectViewSet, TaskViewSet, CommentViewSet, home
 
-# Router
+
 router = DefaultRouter()
 router.register("projects", ProjectViewSet, basename="projects")
 router.register("tasks", TaskViewSet, basename="tasks")

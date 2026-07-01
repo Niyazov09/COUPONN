@@ -123,6 +123,3 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API for managing projects, tasks and comments.",
     "VERSION": "1.0.0",
 }
-
-
-

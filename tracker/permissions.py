@@ -9,18 +9,17 @@ class IsProjectOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
-        # владелец всегда проходит
         if obj.owner == request.user:
             return True
 
-        # участник может читать и менять, но не удалять
+       
         if request.method in SAFE_METHODS:
             return obj.is_member(request.user)
 
         if request.method in ("PUT", "PATCH"):
             return obj.is_member(request.user)
 
-        # DELETE — только владелец
+       
         if request.method == "DELETE":
             return obj.owner == request.user
 

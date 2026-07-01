@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class Project(models.Model):
     name = models.CharField(max_length=200)
+
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -26,7 +27,6 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-    # ✅ ОДНА нормальная версия is_member (без дублей)
     def is_member(self, user):
         return (
             user == self.owner or
@@ -67,9 +67,6 @@ class Task(models.Model):
         choices=PRIORITY_CHOICES,
         default="medium"
     )
-
-    # ✅ ДОБАВЛЕНО ДЛЯ ПУНКТА 15
-    priority_weight = models.IntegerField(default=0)
 
     assignee = models.ForeignKey(
         User,
