@@ -40,12 +40,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_permissions(self):
-        if self.action == "destroy":
-            permission_classes = [IsAuthenticated, IsProjectOwner]
-        else:
-            permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
+     if self.action == "destroy":
+        permission_classes = [IsAuthenticated, IsProjectOwner]
+     else:
+        permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
 
-        return [permission() for permission in permission_classes]
+     return [permission() for permission in permission_classes]
 
     @action(detail=True, methods=["post"])
     def add_member(self, request, pk=None):

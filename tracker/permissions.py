@@ -3,22 +3,28 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsProjectOwner(BasePermission):
     """
-    Только владелец проекта может удалять проект.
-    Владелец и участники могут просматривать и изменять проект.
+    DELETE — только владелец
+    GET / PUT / PATCH — владелец и участник
     """
 
     def has_object_permission(self, request, view, obj):
-        # Просмотр — владелец и участники
+
+        # владелец всегда проходит
+        if obj.owner == request.user:
+            return True
+
+        # участник может читать и менять, но не удалять
         if request.method in SAFE_METHODS:
             return obj.is_member(request.user)
 
-        # PATCH / PUT — владелец и участники
         if request.method in ("PUT", "PATCH"):
             return obj.is_member(request.user)
 
         # DELETE — только владелец
-        return obj.owner == request.user
+        if request.method == "DELETE":
+            return obj.owner == request.user
 
+        return False
 
 class IsProjectMember(BasePermission):
     """

@@ -8,72 +8,91 @@ Python 3
 Django
 Django REST Framework
 SimpleJWT
-SQLite
+SQLite / PostgreSQL (Docker)
 Django Filter
 DRF Spectacular (Swagger / OpenAPI)
 🚀 Возможности
 JWT-аутентификация
-Создание проектов
+CRUD для проектов
 Добавление участников в проекты
-Создание задач
+CRUD для задач
 Назначение исполнителей (assignee)
 Комментарии к задачам
 Поиск задач
 Фильтрация и сортировка
 Swagger документация
 📦 Установка
-1. Создать виртуальное окружение
+1. Клонировать проект
+git clone <your-repo-url>
+cd project
+2. Виртуальное окружение
 python -m venv venv
-2. Активировать
-
 Windows:
 venv\Scripts\activate
-
 3. Установить зависимости
-pip install django
-pip install djangorestframework
-pip install djangorestframework-simplejwt
-pip install django-filter
-pip install drf-spectacular
+pip install -r requirements.txt
 🧱 Миграции
 python manage.py makemigrations
 python manage.py migrate
 👤 Создать администратора
 python manage.py createsuperuser
-▶️ Запуск
+▶️ Запуск проекта
 python manage.py runserver
+
 API будет доступно:
+
 http://127.0.0.1:8000/
 🔐 JWT Авторизация
-Получить токен:
-POST /api/token/
-Обновить токен:
+Получить токен
+curl -X POST http://127.0.0.1:8000/api/token/ ^
+-H "Content-Type: application/json" ^
+-d "{\"username\":\"admin\",\"password\":\"admin123\"}"
+Refresh токена
 POST /api/token/refresh/
 📁 API Endpoints
 📂 Projects
-GET    /api/projects/
-POST   /api/projects/
-PATCH  /api/projects/{id}/
+Создать проект
+curl -X POST http://127.0.0.1:8000/api/projects/ ^
+-H "Authorization: Bearer <token>" ^
+-H "Content-Type: application/json" ^
+-d "{\"name\":\"Test project\"}"
+Получить список
+GET /api/projects/
+Обновить
+PATCH /api/projects/{id}/
+Удалить
 DELETE /api/projects/{id}/
-POST   /api/projects/{id}/add_member/
+Добавить участника
+POST /api/projects/{id}/add_member/
 📋 Tasks
-GET    /api/tasks/
-POST   /api/tasks/
-PATCH  /api/tasks/{id}/
+Создать задачу
+curl -X POST http://127.0.0.1:8000/api/tasks/ ^
+-H "Authorization: Bearer <token>" ^
+-H "Content-Type: application/json" ^
+-d "{\"title\":\"Task 1\",\"project\":1,\"status\":\"todo\"}"
+Получить список
+GET /api/tasks/
+Обновить
+PATCH /api/tasks/{id}/
+Удалить
 DELETE /api/tasks/{id}/
-GET    /api/tasks/{id}/comments/
+Комментарии задачи
+GET /api/tasks/{id}/comments/
 💬 Comments
-GET    /api/comments/
-POST   /api/comments/
-PATCH  /api/comments/{id}/
-DELETE /api/comments/{id}/
+Создать комментарий
+curl -X POST http://127.0.0.1:8000/api/comments/ ^
+-H "Authorization: Bearer <token>" ^
+-H "Content-Type: application/json" ^
+-d "{\"text\":\"Hello\",\"task\":1}"
 📊 Swagger / OpenAPI
-Schema:
-/api/schema/
-Swagger UI:
-/api/schema/swagger-ui/
-/api/schema/redoc/
+http://127.0.0.1:8000/api/schema/
+http://127.0.0.1:8000/api/schema/swagger-ui/
+http://127.0.0.1:8000/api/schema/redoc/
 🧪 Тесты
 python manage.py test
-👨‍💻 Автор:shokhzhakhon
+🐳 Docker (если используешь)
+docker-compose up --build
+👨‍💻 Автор
+
+Shokhzhakhon
 Учебный проект Django REST Framework
