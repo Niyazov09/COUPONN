@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Case, When, IntegerField
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
@@ -102,13 +102,21 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["project", "status", "assignee"]
     search_fields = ["title"]
 
-    ordering_fields = ["priority_weight", "created_at"]
+    ordering_fields = ["priority_order", "created_at"]
 
     def get_queryset(self):
         user = self.request.user
+
         return Task.objects.filter(
             Q(project__owner=user) |
             Q(project__members=user)
+        ).annotate(
+            priority_order=Case(
+                When(priority="high", then=1),
+                When(priority="medium", then=2),
+                When(priority="low", then=3),
+                output_field=IntegerField(),
+            )
         ).distinct()
 
     def perform_create(self, serializer):
@@ -118,12 +126,6 @@ class TaskViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Вы не являетесь участником проекта.")
 
         serializer.save()
-
-    @action(detail=True, methods=["get"])
-    def comments(self, request, pk=None):
-        task = self.get_object()
-        serializer = CommentSerializer(task.comments.all(), many=True)
-        return Response(serializer.data)
 
 
 # ---------------- COMMENT ----------------
