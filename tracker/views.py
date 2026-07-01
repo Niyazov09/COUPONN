@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import JsonResponse
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
@@ -21,12 +20,16 @@ from .permissions import (
     IsProjectOwnerOrMember,
 )
 
+
 # ---------------- PROJECT ----------------
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
+
+    # 🔥 ограничение методов (пункт 11)
+    http_method_names = ["get", "post", "delete"]
 
     def get_queryset(self):
         user = self.request.user
@@ -50,7 +53,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = self.get_object()
 
         if project.owner != request.user:
-            raise PermissionDenied("Только владелец проекта может добавлять участников.")
+            raise PermissionDenied(
+                "Только владелец проекта может добавлять участников."
+            )
 
         user_id = request.data.get("user_id")
 
@@ -88,6 +93,9 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, IsTaskProjectMember]
 
+    # 🔥 ограничение методов (пункт 11)
+    http_method_names = ["get", "post", "patch"]
+
     filter_backends = [
         DjangoFilterBackend,
         SearchFilter,
@@ -97,7 +105,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["project", "status", "assignee"]
     search_fields = ["title"]
 
-    # ✅ ИСПРАВЛЕНИЕ ПУНКТА 3
+    # 🔥 правильная сортировка (пункт 3)
     ordering_fields = ["priority_weight", "created_at"]
 
     def get_queryset(self):
@@ -129,6 +137,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsCommentProjectMember]
 
+    # 🔥 только чтение и создание
+    http_method_names = ["get", "post"]
+
     def get_queryset(self):
         user = self.request.user
         return Comment.objects.filter(
@@ -143,4 +154,3 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Вы не являетесь участником проекта.")
 
         serializer.save(author=self.request.user)
-
