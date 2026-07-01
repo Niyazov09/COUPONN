@@ -12,7 +12,6 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Project, Task, Comment
 from .serializers import ProjectSerializer, TaskSerializer, CommentSerializer
-
 from .permissions import (
     IsProjectOwner,
     IsTaskProjectMember,
@@ -28,7 +27,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, IsProjectOwnerOrMember]
 
-    # 🔥 ограничение методов (пункт 11)
     http_method_names = ["get", "post", "delete"]
 
     def get_queryset(self):
@@ -93,7 +91,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, IsTaskProjectMember]
 
-    # 🔥 ограничение методов (пункт 11)
     http_method_names = ["get", "post", "patch"]
 
     filter_backends = [
@@ -105,7 +102,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["project", "status", "assignee"]
     search_fields = ["title"]
 
-    # 🔥 правильная сортировка (пункт 3)
     ordering_fields = ["priority_weight", "created_at"]
 
     def get_queryset(self):
@@ -137,7 +133,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsCommentProjectMember]
 
-    # 🔥 только чтение и создание
     http_method_names = ["get", "post"]
 
     def get_queryset(self):
