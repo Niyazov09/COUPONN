@@ -1,5 +1,11 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Case, IntegerField, Q, When
+
+
+class ProjectQuerySet(models.QuerySet):
+    def visible_to(self, user):
+        return self.filter(Q(owner=user) | Q(members=user)).distinct()
 
 
 class Project(models.Model):
@@ -19,6 +25,8 @@ class Project(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ProjectQuerySet.as_manager()
+
     class Meta:
         verbose_name = "Project"
         verbose_name_plural = "Projects"
@@ -31,6 +39,23 @@ class Project(models.Model):
         return (
             user == self.owner or
             self.members.filter(id=user.id).exists()
+        )
+
+
+class TaskQuerySet(models.QuerySet):
+    def visible_to(self, user):
+        return self.filter(
+            Q(project__owner=user) | Q(project__members=user)
+        ).distinct()
+
+    def with_priority_order(self):
+        return self.annotate(
+            priority_order=Case(
+                When(priority="high", then=1),
+                When(priority="medium", then=2),
+                When(priority="low", then=3),
+                output_field=IntegerField(),
+            )
         )
 
 
@@ -79,6 +104,8 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = TaskQuerySet.as_manager()
+
     class Meta:
         verbose_name = "Task"
         verbose_name_plural = "Tasks"
@@ -86,6 +113,13 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class CommentQuerySet(models.QuerySet):
+    def visible_to(self, user):
+        return self.filter(
+            Q(task__project__owner=user) | Q(task__project__members=user)
+        ).distinct()
 
 
 class Comment(models.Model):
@@ -98,6 +132,8 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = CommentQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Comment"
