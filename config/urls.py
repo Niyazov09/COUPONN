@@ -23,7 +23,7 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
 
-    path("api/", include("tracker.urls")),
+    path("api/", include("tracker.api.urls")),
 
     # JWT
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
