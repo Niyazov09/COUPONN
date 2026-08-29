@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from tracker.exceptions import (
+    ApplicationError,
     BusinessValidationError,
     NotFoundError,
     PermissionDeniedError,
@@ -25,5 +26,13 @@ def application_exception_handler(exc, context):
             detail = exc.args[0] if exc.args else "Ошибка."
             data = detail if isinstance(detail, dict) else {"detail": detail}
             return Response(data, status=status_code)
+
+    # Базовый ApplicationError (или новый наследник, для которого забыли
+    # завести маппинг) — тоже доменная ошибка, а не 500. Отдаём 400 как
+    # самый безопасный дефолт, а не роняем запрос.
+    if isinstance(exc, ApplicationError):
+        detail = exc.args[0] if exc.args else "Ошибка."
+        data = detail if isinstance(detail, dict) else {"detail": detail}
+        return Response(data, status=400)
 
     return exception_handler(exc, context)
