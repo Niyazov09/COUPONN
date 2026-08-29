@@ -1,3 +1,5 @@
+import time
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -76,6 +78,14 @@ class ProjectAddMemberTests(TestCase):
         with self.assertRaises(BusinessValidationError):
             project_add_member(actor=self.owner, project_id=self.project.pk, user_id=999999)
 
+    def test_adding_owner_as_member_does_not_duplicate_role(self):
+        # Регрессия: идемпотентность проверялась через members.filter(...),
+        # а не is_member() — добавление владельца дублировало его в members.
+        project = project_add_member(
+            actor=self.owner, project_id=self.project.pk, user_id=self.owner.pk
+        )
+        self.assertFalse(project.members.filter(pk=self.owner.pk).exists())
+
     def test_add_member_is_idempotent(self):
         project_add_member(actor=self.owner, project_id=self.project.pk, user_id=self.new_user.pk)
         project = project_add_member(
@@ -136,6 +146,29 @@ class TaskUpdateTests(TestCase):
                 task_id=self.task.pk,
                 data={"project": self.other_project.pk},
             )
+
+    def test_updated_at_refreshes_on_patch(self):
+        # Регрессия: save(update_fields=[...]) без 'updated_at' в списке
+        # не триггерит auto_now, поле оставалось временем создания.
+        original_updated_at = self.task.updated_at
+        time.sleep(0.01)
+
+        task = task_update(
+            actor=self.owner, task_id=self.task.pk, data={"title": "New title"}
+        )
+
+        self.assertGreater(task.updated_at, original_updated_at)
+
+    def test_task_update_does_not_mutate_caller_dict(self):
+        # Регрессия: сервис переписывал переданный словарь на месте
+        # (побочный эффект на s.validated_data вызывающей стороны).
+        member = User.objects.create_user("member")
+        self.project.members.add(member)
+        data = {"assignee": member.pk}
+
+        task_update(actor=self.owner, task_id=self.task.pk, data=data)
+
+        self.assertEqual(data["assignee"], member.pk)
 
 
 class TaskDeleteTests(TestCase):

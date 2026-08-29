@@ -52,7 +52,7 @@ def project_add_member(*, actor: User, project_id: int, user_id: int) -> Project
     except User.DoesNotExist:
         raise BusinessValidationError({"user_id": ["Пользователь не найден."]})
 
-    if project.members.filter(id=user.id).exists():
+    if project.is_member(user):
         return project
 
     project.members.add(user)
@@ -94,6 +94,10 @@ def task_create(
 def task_update(*, actor: User, task_id: int, data: dict) -> Task:
     task = selectors.task_get(user=actor, task_id=task_id)
 
+    # Не мутируем словарь вызывающей стороны (s.validated_data) — работаем
+    # с собственной копией.
+    data = dict(data)
+
     if "project" in data:
         raise BusinessValidationError({"project": ["Менять проект задачи нельзя."]})
 
@@ -107,6 +111,9 @@ def task_update(*, actor: User, task_id: int, data: dict) -> Task:
             update_fields.append(field)
 
     if update_fields:
+        # auto_now на updated_at срабатывает только для полей, явно
+        # перечисленных в update_fields.
+        update_fields.append("updated_at")
         task.save(update_fields=update_fields)
 
     return task
