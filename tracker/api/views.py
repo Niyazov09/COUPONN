@@ -47,7 +47,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(ProjectSerializer(project).data, status=201)
 
     def partial_update(self, request, pk=None):
-        s = ProjectUpdateSerializer(data=request.data, partial=True)
+        s = ProjectUpdateSerializer(data=request.data)
         s.is_valid(raise_exception=True)
         project = services.project_update(
             actor=request.user,

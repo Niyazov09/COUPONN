@@ -43,6 +43,13 @@ class ProjectApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_patch_project_with_empty_body_returns_400(self):
+        # Регрессия: partial=True на входном сериализаторе делало 'name'
+        # необязательным и приводило к KeyError -> 500 на пустом теле.
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(f"/api/projects/{self.project.pk}/", {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_add_member_by_non_owner_returns_403(self):
         self.client.force_authenticate(self.member)
         response = self.client.post(
@@ -165,6 +172,49 @@ class TaskApiTests(APITestCase):
             f"/api/tasks/{task.pk}/", {"project": other_project.pk}
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class NPlusOneTests(APITestCase):
+    """Регрессия: select_related/prefetch_related в селекторах (issue 6)."""
+
+    def setUp(self):
+        self.owner = User.objects.create_user("owner", password="12345678")
+        self.assignee = User.objects.create_user("assignee", password="12345678")
+        self.project = Project.objects.create(name="P", owner=self.owner)
+        self.project.members.add(self.assignee)
+
+        for i in range(10):
+            Task.objects.create(
+                project=self.project, title=f"T{i}", assignee=self.assignee
+            )
+
+        self.client.force_authenticate(self.owner)
+
+    def test_task_list_query_count_is_constant(self):
+        # count + select (assignee через select_related/JOIN) + пагинация.
+        with self.assertNumQueries(2):
+            response = self.client.get("/api/tasks/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_project_list_query_count_is_constant(self):
+        for i in range(10):
+            other = User.objects.create_user(f"m{i}", password="12345678")
+            self.project.members.add(other)
+
+        # count + select(owner через JOIN) + prefetch(members).
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/projects/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_comment_list_query_count_is_constant(self):
+        task = Task.objects.create(project=self.project, title="T")
+        for i in range(10):
+            Comment.objects.create(task=task, author=self.owner, text=f"c{i}")
+
+        # count + select (author через JOIN).
+        with self.assertNumQueries(2):
+            response = self.client.get("/api/comments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class CommentApiTests(APITestCase):
