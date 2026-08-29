@@ -37,7 +37,6 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True)),
                 ('status', models.CharField(choices=[('todo', 'Todo'), ('in_progress', 'In Progress'), ('done', 'Done')], default='todo', max_length=20)),
                 ('priority', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], default='medium', max_length=20)),
-                ('priority_weight', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('assignee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_tasks', to=settings.AUTH_USER_MODEL)),
