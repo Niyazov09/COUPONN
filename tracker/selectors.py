@@ -13,23 +13,36 @@ from .models import Comment, Project, Task
 
 
 def project_list(*, user: User) -> QuerySet[Project]:
-    return Project.objects.visible_to(user)
+    return (
+        Project.objects.visible_to(user)
+        .select_related("owner")
+        .prefetch_related("members")
+    )
 
 
 def project_get(*, user: User, project_id: int) -> Project:
     try:
-        return Project.objects.visible_to(user).get(pk=project_id)
+        return (
+            Project.objects.visible_to(user)
+            .select_related("owner")
+            .prefetch_related("members")
+            .get(pk=project_id)
+        )
     except Project.DoesNotExist:
         raise NotFoundError("Проект не найден.")
 
 
 def task_list(*, user: User) -> QuerySet[Task]:
-    return Task.objects.visible_to(user).with_priority_order()
+    return (
+        Task.objects.visible_to(user)
+        .with_priority_order()
+        .select_related("assignee")
+    )
 
 
 def task_get(*, user: User, task_id: int) -> Task:
     try:
-        return Task.objects.visible_to(user).get(pk=task_id)
+        return Task.objects.visible_to(user).select_related("assignee").get(pk=task_id)
     except Task.DoesNotExist:
         raise NotFoundError("Задача не найдена.")
 
@@ -38,8 +51,8 @@ def task_comment_list(*, user: User, task_id: int) -> QuerySet[Comment]:
     # Невидимая/несуществующая задача -> NotFoundError, до похода за
     # комментариями.
     task = task_get(user=user, task_id=task_id)
-    return Comment.objects.filter(task=task)
+    return Comment.objects.filter(task=task).select_related("author")
 
 
 def comment_list(*, user: User) -> QuerySet[Comment]:
-    return Comment.objects.visible_to(user)
+    return Comment.objects.visible_to(user).select_related("author")
